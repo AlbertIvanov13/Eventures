@@ -29,5 +29,7 @@ namespace Eventures.App.Domain
         public EventuresUser Owner { get; set; }
 
         public string OwnerId { get; set; }
+
+        public IEnumerable<Order> Orders { get; set; } = new List<Order>();
     }
 }

@@ -22,7 +22,7 @@
                 @Html.DisplayNameFor(model => model.Place)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Owner)
+               Action
             </th>
             <th></th>
         </tr>
@@ -43,7 +43,10 @@
                 @Html.DisplayFor(modelItem => item.Place)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Owner)
+                @await Html.PartialAsync("OrderPartialView", new OrderCreateBindingModel
+           {
+               EventId = item.Id
+           })
             </td>
         </tr>
 }

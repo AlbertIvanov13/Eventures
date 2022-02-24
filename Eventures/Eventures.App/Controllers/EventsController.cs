@@ -22,11 +22,12 @@ namespace Eventures.App.Controllers
             this.context = context; 
         }
 
-        public IActionResult All()
+        public IActionResult All(string searchString)
         {
             List<EventAllViewModel> events = context.Events
                 .Select(eventFromDb => new EventAllViewModel
                 {
+                    Id = eventFromDb.Id,
                     Name = eventFromDb.Name,
                     Place = eventFromDb.Place,
                     Start = eventFromDb.Start.ToString("dd-MMM-yyyy HH:mm", CultureInfo.InvariantCulture),
@@ -34,6 +35,10 @@ namespace Eventures.App.Controllers
                     Owner = eventFromDb.Owner.UserName
                 })
                 .ToList();
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                events = events.Where(s => s.Place.Contains(searchString)).ToList();
+            }
 
             return this.View(events);
         }
@@ -68,6 +73,41 @@ namespace Eventures.App.Controllers
             }
 
             return this.View();
+        }
+
+        [Authorize]
+
+        public IActionResult My(string searchString)
+        {
+            string currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = this.context.Users.SingleOrDefault(u => u.Id == currentUserId);
+            if (user == null)
+            {
+                return null;
+            }
+            List<OrderListingViewModel> orders = this.context.Orders
+                .Where(o => o.CustomerId == user.Id)
+                .Select(o => new OrderListingViewModel
+                {
+                    Id = o.Id,
+                    EventId = o.EventId,
+                    EventName = o.Event.Name,
+                    EventStart = o.Event.Start.ToString("dd-mm-yyyy hh:mm", CultureInfo.InvariantCulture),
+                    EventEnd = o.Event.End.ToString("dd-mm-yyyy hh:mm", CultureInfo.InvariantCulture),
+                    EventPlace = o.Event.Place,
+                    OrderedOn = o.OrderedOn.ToString("dd-mm-yyyy hh:mm", CultureInfo.InvariantCulture),
+                    CustomerId = o.CustomerId,
+                    CustonmerUsername = o.Customer.UserName,
+                    TicketsCount = o.TicketsCount
+                })
+                .ToList();
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                orders = orders.Where(o => o.EventPlace.Contains(searchString)).ToList();
+            }
+
+            return this.View(orders);
         }
         public IActionResult Index()
         {
